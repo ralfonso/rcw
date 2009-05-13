@@ -9,6 +9,12 @@ from optparse import OptionParser
 MAX_FONTSIZE = 40
 MIN_FONTSIZE = 7
 
+VERSION = "0.1"
+APP_NAME = "RCW"
+AUTHORS = ["Ryan Roemmich <ryan@roemmich.org>"]
+WEBSITE = "http://github.com/ralfonso/rcw/tree/master"
+
+
 class RCW(object):
     def __init__(self,options):
         self.options = options
@@ -54,11 +60,23 @@ class RCW(object):
 
         # we have to put the label in an event box in case we want to trap events
         self.ebox = gtk.EventBox()         
+        self.ebox.set_events(gtk.gdk.BUTTON_PRESS_MASK)
+        self.ebox.connect("button_press_event",self.mouse_press)
         self.ebox.set_visible_window(False)
         self.ebox.add(self.label)
         self.vbox.pack_start(self.ebox,expand=True,padding=5)
 
         self.screen_changed(self.window)
+
+        ## Menu
+        self.popup_menu = gtk.Menu()
+        menuitem = gtk.ImageMenuItem (gtk.STOCK_ABOUT)
+        menuitem.connect("activate", self.about)
+        self.popup_menu.add(menuitem)
+        menuitem = gtk.ImageMenuItem (gtk.STOCK_QUIT)
+        menuitem.connect("activate", gtk.main_quit)
+        self.popup_menu.add(menuitem)
+        self.popup_menu.show_all()
 
         if self.options.stick:
             self.window.stick()
@@ -123,6 +141,24 @@ class RCW(object):
 
         #always highlight the entire expression after the user presses enter
         self.entry.select_region(0,-1)
+
+    def mouse_press(self,window,event):
+        if event.button == 3:
+            self.popup_menu.popup(None, None, None, event.button, event.time)
+
+    def about(self, widget=None, data=None):
+        dlg = gtk.AboutDialog()
+        dlg.set_version(VERSION)
+        dlg.set_name(APP_NAME)
+
+        dlg.set_authors(AUTHORS)
+        dlg.set_website(WEBSITE)
+
+        def close(w, res):
+            if res == gtk.RESPONSE_CANCEL:
+                w.hide()
+        dlg.connect("response", close)
+        dlg.show()       
 
 class CalcEntry(gtk.Entry):
     def __init__(self, allowed_chars,**kwargs):
