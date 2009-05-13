@@ -82,6 +82,29 @@ class RCW(object):
             self.window.stick()
         self.window.set_border_width(2)
 
+
+    def position(self):
+        edge = self.options.edge.split('_')
+        edge_gap_x = self.options.edge_gap_x
+        edge_gap_y = self.options.edge_gap_y
+
+        #self.window.resize(1,1)
+        width, height = self.window.get_size()
+
+        if edge[0] == 'top':
+            y = edge_gap_y
+        else:
+            y = gtk.gdk.screen_height() - height - edge_gap_y
+
+        if edge[1] == 'left':
+            x = edge_gap_x
+        elif edge[1] == 'center':
+            x = (gtk.gdk.screen_width() - width) / 2
+        else:
+            x = gtk.gdk.screen_width() - width - edge_gap_x
+
+        self.window.move(x, y)
+
     def expose(self, widget, event=None):
         # signal handler for expose. called every time the window needs to be redrawn. with alpha!
 
@@ -175,6 +198,8 @@ class CalcEntry(gtk.Entry):
                 widget.delete_selection()
 
 def main():
+    edges = [ 'top_left', 'top_center', 'top_right', 'bottom_left', 'bottom_center', 'bottom_right' ] 
+
     usage = "usage: %prog [options]"
     parser = OptionParser(usage=usage)
 
@@ -192,13 +217,19 @@ def main():
                           help="print extra info",default=False)
     parser.add_option('-s','--stick',dest='stick',action='store_true',default=False,
                           help='make window sticky (display on all desktops)')
+    parser.add_option('--edge',dest="edge",default='top_right',choices=edges,
+                      help='where to place the window "{top,bottom}_{left,center,right}"')
+    parser.add_option('--gapx',dest='edge_gap_x',
+                      help="horizontal spacing from the edge",default=0,type="int")
+    parser.add_option('--gapy',dest='edge_gap_y',
+                      help="vertical spacing from the edge",default=0,type="int")
 
     (options, args) = parser.parse_args()
 
     rcw = RCW(options)
     gtk.gdk.error_trap_push()
 
-    #dname.position()
+    rcw.position()
     rcw.show()
     gtk.main()  
 
