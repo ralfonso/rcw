@@ -12,7 +12,7 @@ MIN_FONTSIZE = 7
 VERSION = "0.1"
 APP_NAME = "RCW"
 AUTHORS = ["Ryan Roemmich <ryan@roemmich.org>"]
-WEBSITE = "http://github.com/ralfonso/rcw/tree/master"
+WEBSITE = "http://github.com/ralfonso/rcw/tree/"
 
 
 class RCW(object):
@@ -35,10 +35,9 @@ class RCW(object):
             self.bg_rgb = gtk.gdk.color_parse(self.options.bgcolor)
         except ValueError:
             if options.debug:
-                print "DEBUG: unable to parse bgcolor name"
+                print "unable to parse bgcolor name, setting background to black"
             self.bg_rgb = gtk.gdk.color_parse('#000000')
 
-        self.bg_color_rgb = (float(self.bg_rgb.red)/256/256, float(self.bg_rgb.green)/256/256, float(self.bg_rgb.blue)/256/256)
         self.window.modify_bg(gtk.STATE_NORMAL,self.bg_rgb)
 
         self.vbox = gtk.VBox()
@@ -110,8 +109,12 @@ class RCW(object):
 
         cr = self.window.window.cairo_create()
         if self.window.is_composited() == True and self.options.opacity < 100:
-            cr.set_source_rgba(self.bg_color_rgb[0], self.bg_color_rgb[1],
-                               self.bg_color_rgb[2], float(self.options.opacity)/100) # Transparent
+            #cairo colors are between 0 and 1
+            red = float(self.bg_rgb.red) / 256 / 256
+            green = float(self.bg_rgb.green) / 256 / 256
+            blue = float(self.bg_rgb.blue) / 256 / 256
+
+            cr.set_source_rgba(red,green,blue,float(self.options.opacity)/100)
             # Draw the background
             cr.set_operator(cairo.OPERATOR_SOURCE)
             cr.paint()
@@ -180,6 +183,7 @@ class RCW(object):
         def close(w, res):
             if res == gtk.RESPONSE_CANCEL:
                 w.hide()
+
         dlg.connect("response", close)
         dlg.show()       
 
