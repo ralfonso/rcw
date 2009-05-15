@@ -65,6 +65,7 @@ class RCW(object):
         self.ebox.add(self.label)
         self.vbox.pack_start(self.ebox,expand=True,padding=5)
 
+        # run this once to set the colormap
         self.screen_changed(self.window)
 
         ## Menu
@@ -79,6 +80,7 @@ class RCW(object):
 
         if self.options.stick:
             self.window.stick()
+
         self.window.set_border_width(2)
 
 
@@ -87,7 +89,6 @@ class RCW(object):
         edge_gap_x = self.options.edge_gap_x
         edge_gap_y = self.options.edge_gap_y
 
-        #self.window.resize(1,1)
         width, height = self.window.get_size()
 
         if edge[0] == 'top':
@@ -109,7 +110,7 @@ class RCW(object):
 
         cr = self.window.window.cairo_create()
         if self.window.is_composited() == True and self.options.opacity < 100:
-            #cairo colors are between 0 and 1
+            #cairo colors need to be between 0 and 1
             red = float(self.bg_rgb.red) / 256 / 256
             green = float(self.bg_rgb.green) / 256 / 256
             blue = float(self.bg_rgb.blue) / 256 / 256
@@ -131,6 +132,7 @@ class RCW(object):
         return False
 
     def screen_changed(self, widget, old_screen=None):
+        # dunno if we need to do this every time.
         screen = widget.get_screen()
         colormap = screen.get_rgba_colormap()
         if colormap == None:
@@ -160,6 +162,8 @@ class RCW(object):
             markup = '<span font_desc="%s" color="%s">%s</span>' % (self.font_desc,self.options.text_color,result)
             layout.set_markup(markup)
             width,height = layout.get_pixel_size()
+
+            # 20% fudge factor
             if float(width) * 1.2 <= self.width:
                 break
 
@@ -194,7 +198,9 @@ class CalcEntry(gtk.Entry):
         self.connect("changed", self.check_char, None)
 
     def check_char(self, widget, string, *args):
-        #signal handler for any sort of input. due to X11 pasting, we have to check the entire expression every time
+        """signal handler for any sort of input.  we have to check the entire expression rather 
+           than just the last character because the user might have copy/pasted 
+           something like 'gtk.main_quit()' ;) """
 
         for pos,char in enumerate(widget.get_chars(0,-1)):
             if char not in self.allowed_chars:
