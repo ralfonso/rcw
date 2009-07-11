@@ -196,6 +196,7 @@ class CalcEntry(gtk.Entry):
         gtk.Entry.__init__(self,**kwargs)
         self.allowed_chars = allowed_chars
         self.connect("changed", self.check_char, None)
+        self.connect("key_release_event",self.check_esc,None)
 
     def check_char(self, widget, string, *args):
         """signal handler for any sort of input.  we have to check the entire expression rather 
@@ -206,6 +207,12 @@ class CalcEntry(gtk.Entry):
             if char not in self.allowed_chars:
                 widget.select_region(pos, pos + 1)
                 widget.delete_selection()
+
+    def check_esc(self, widget, event, *args):
+        key = gtk.gdk.keyval_name(event.keyval)
+        if key == "Escape":
+            widget.select_region(0,-1)
+            widget.delete_selection()
 
 def main():
     edges = [ 'top_left', 'top_center', 'top_right', 'bottom_left', 'bottom_center', 'bottom_right' ] 
